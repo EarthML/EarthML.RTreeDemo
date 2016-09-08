@@ -1,0 +1,22 @@
+{
+  "name": "earthml-rtreedemo",
+  "version": "1.0.0",
+  "description": "A RTree Demo using signalr and asp net core",
+  "main": "startup.cs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "EarthML"
+  ],
+  "author": "Poul K. Sørense",
+  "license": "MIT",
+  "dependencies": {
+    "signalr": "2.2.1",
+    "nprogress": "0.2.0"
+  },
+  "devDependencies": {
+    "grunt": "1.0.1",
+    "grunt-npmcopy": "0.1.0"
+  }
+}

@@ -16,6 +16,10 @@ namespace EarthML.RTreeDemo
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR(options =>
+            {
+                options.Hubs.EnableDetailedErrors = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -28,9 +32,20 @@ namespace EarthML.RTreeDemo
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Run(async (context) =>
+            app.UseWebSockets();
+
+            app.UseSignalR();
+
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles(new StaticFileOptions
             {
-                await context.Response.WriteAsync("Hello World!");
+                ServeUnknownFileTypes = true,
+                OnPrepareResponse = context =>
+                {
+                    context.Context.Response.Headers.Add("Cache-Control", "public, max-age=3600, no-cache");
+
+                }
             });
         }
     }
