@@ -44,7 +44,7 @@
             width: 2
           }),
           image: new ol.style.Circle({
-            radius: 7,
+            radius: 3,
             fill: new ol.style.Fill({
               color: '#ffcc33'
             })
@@ -52,20 +52,7 @@
         })
       });
       var vectorBounds = new ol.layer.Vector({
-          source: bounds,
-          style: new ol.style.Style({
-              
-              stroke: new ol.style.Stroke({
-                  color: '#ff33cc',
-                  width: 1
-              }),
-              image: new ol.style.Circle({
-                  radius: 7,
-                  fill: new ol.style.Fill({
-                      color: '#ffcc33'
-                  })
-              })
-          })
+          source: bounds       
       });
 
       var map = new ol.Map({
@@ -131,14 +118,31 @@
           chat.client.UpdateTree = function (data) {
               console.log(data);
               console.log(bounds.getFeatureById(data.id));
-              if (!bounds.getFeatureById(data.id)) {
-                  var feature = new ol.Feature(format.readGeometry(data.geometry, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
+              let feature = bounds.getFeatureById(data.id);
+              if (!feature) {
+                  feature = new ol.Feature(format.readGeometry(data.geometry, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
                   feature.setId(data.id);
                   bounds.addFeature(feature);
               } else {
-                  bounds.getFeatureById(data.id).setGeometry(format.readGeometry(data.geometry, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
+                  feature.setGeometry(format.readGeometry(data.geometry, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
               }
+
+              feature.setStyle([
+                  new ol.style.Style({
+
+                      stroke: new ol.style.Stroke({
+                          color: [0,0,0, data.height /5],
+                          width: 1
+                      })
+                  })]);
+
+              map.changed();
+              
           };
+          chat.client.ClearTree = function () {
+
+              bounds.clear();
+          }
           $.connection.hub.logging = true;
           $.connection.hub.start().done(function () {
              

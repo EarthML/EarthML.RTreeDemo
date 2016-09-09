@@ -14,7 +14,7 @@ namespace EarthML.RTreeDemo
     {
         internal Envelope() { }
 
-        public Envelope(int x1, int y1, int x2, int y2)
+        public Envelope(double x1, double y1, double x2, double y2)
         {
             X1 = x1;
             Y1 = y1;
@@ -22,13 +22,13 @@ namespace EarthML.RTreeDemo
             Y2 = y2;
         }
 
-        public int X1 { get; private set; } = int.MaxValue; // 0
-        public int Y1 { get; private set; } = int.MaxValue; // 1
-        public int X2 { get; private set; } = int.MinValue; // 2
-        public int Y2 { get; private set; } = int.MinValue; // 3
+        public double X1 { get; private set; } = int.MaxValue; // 0
+        public double Y1 { get; private set; } = int.MaxValue; // 1
+        public double X2 { get; private set; } = int.MinValue; // 2
+        public double Y2 { get; private set; } = int.MinValue; // 3
 
-        internal int Area { get { return (X2 - X1) * (Y2 - Y1); } }
-        internal int Margin { get { return (X2 - X1) + (Y2 - Y1); } }
+        internal double Area { get { return (X2 - X1) * (Y2 - Y1); } }
+        internal double Margin { get { return (X2 - X1) + (Y2 - Y1); } }
 
         internal void Extend(Envelope by)
         {
@@ -251,17 +251,9 @@ namespace EarthML.RTreeDemo
             AdjutsParentBounds(envelope, insertPath, level);
         }
 
-        private static int CombinedArea(Envelope what, Envelope with)
-        {
-            var minX1 = Math.Max(what.X1, with.X1);
-            var minY1 = Math.Max(what.Y1, with.Y1);
-            var maxX2 = Math.Min(what.X2, with.X2);
-            var maxY2 = Math.Min(what.Y2, with.Y2);
+       
 
-            return (maxX2 - minX1) * (maxY2 - minY1);
-        }
-
-        private static int IntersectionArea(Envelope what, Envelope with)
+        private static double IntersectionArea(Envelope what, Envelope with)
         {
             var minX = Math.Max(what.X1, with.X1);
             var minY = Math.Max(what.Y1, with.Y1);
@@ -279,8 +271,8 @@ namespace EarthML.RTreeDemo
 
                 if (node.IsLeaf || path.Count - 1 == level) break;
 
-                var minArea = Int32.MaxValue;
-                var minEnlargement = Int32.MaxValue;
+                var minArea = double.MaxValue;
+                var minEnlargement = double.MaxValue;
 
                 RTreeNode<T> targetNode = null;
 
@@ -288,7 +280,7 @@ namespace EarthML.RTreeDemo
                 {
                     var child = node.Children[i];
                     var area = child.Envelope.Area;
-                    var enlargement = CombinedArea(bbox, child.Envelope) - area;
+                    var enlargement = bbox.EnlargedArea(child.Envelope) - area;
 
                     // choose entry with the least area enlargement
                     if (enlargement < minEnlargement)
@@ -353,8 +345,8 @@ namespace EarthML.RTreeDemo
 
         private int ChooseSplitIndex(RTreeNode<T> node, int minEntries, int totalCount)
         {
-            var minOverlap = Int32.MaxValue;
-            var minArea = Int32.MaxValue;
+            var minOverlap = double.MaxValue;
+            var minArea = double.MaxValue;
             int index = 0;
 
             for (var i = minEntries; i <= totalCount - minEntries; i++)
@@ -523,7 +515,7 @@ namespace EarthML.RTreeDemo
         private static int CompareNodesByMinX(RTreeNode<T> a, RTreeNode<T> b) { return a.Envelope.X1.CompareTo(b.Envelope.X1); }
         private static int CompareNodesByMinY(RTreeNode<T> a, RTreeNode<T> b) { return a.Envelope.Y1.CompareTo(b.Envelope.Y1); }
 
-        private static int AllDistMargin(RTreeNode<T> node, int m, int M, Comparison<RTreeNode<T>> compare)
+        private static double AllDistMargin(RTreeNode<T> node, int m, int M, Comparison<RTreeNode<T>> compare)
         {
             node.Children.Sort(compare);
 
@@ -560,6 +552,12 @@ namespace EarthML.RTreeDemo
         public static T TryPeek<T>(this Stack<T> stack)
         {
             return stack.Count == 0 ? default(T) : stack.Peek();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double EnlargedArea(this Envelope a, Envelope b)
+        {
+
+            return (Math.Max(b.X2, a.X2) - Math.Min(b.X1, a.X1)) * (Math.Max(b.Y2, a.Y2) - Math.Min(b.Y1, a.Y1));
         }
     }
     public class RTreeNode<T>
@@ -611,13 +609,14 @@ namespace EarthML.RTreeDemo
             Unpack(ref x, ref y, geom);
 
             Trees[Context.ConnectionId].Insert(feature, new Envelope(
-             (int)((x.Min() + 180) / 360.0 * int.MaxValue),
-              (int)((y.Min() + 90) / 180 * int.MaxValue),
-               (int)((x.Max() + 180) / 360.0 * int.MaxValue),
-                (int)((y.Max() + 90) / 180 * int.MaxValue)));
+             x.Min() / 360.0 +0.5,
+             y.Min()  / 180 +0.5,
+               x.Max()  / 360.0  +0.5,
+               y.Max()  / 180   +0.5));
 
             var node = Trees[Context.ConnectionId].root;
 
+            Clients.Caller.ClearTree();
             UpdateTree(node);
 
         }
@@ -645,17 +644,20 @@ namespace EarthML.RTreeDemo
         {
             if (node.Data == null)
             {
-                Clients.Caller.UpdateTree(new JObject(new JProperty("id", node.Id), new JProperty("geometry",
+                Clients.Caller.UpdateTree(new JObject(
+                    new JProperty("id", node.Id),
+                     new JProperty("height", node.Height),
+                    new JProperty("geometry",                    
                     new JObject(
                         new JProperty("type", "Polygon"),
                         new JProperty("coordinates", JToken.FromObject(new double[][][] {
                         new double[][]
                         {
-                            new double[] {((double)node.Envelope.X1)/int.MaxValue*360-180, ((double)node.Envelope.Y1) / int.MaxValue * 180 - 90 },
-                            new double[] {((double)node.Envelope.X1)/int.MaxValue*360-180, ((double)node.Envelope.Y2) / int.MaxValue * 180 - 90 },
-                            new double[] {((double)node.Envelope.X2)/int.MaxValue*360-180, ((double)node.Envelope.Y2) / int.MaxValue * 180 - 90 },
-                            new double[] {((double)node.Envelope.X2)/int.MaxValue*360-180, ((double)node.Envelope.Y1) / int.MaxValue * 180 - 90 },
-                            new double[] {((double)node.Envelope.X1)/int.MaxValue*360-180, ((double)node.Envelope.Y1) / int.MaxValue * 180 - 90 }
+                            new double[] {((node.Envelope.X1)-0.5)*360, (node.Envelope.Y1-0.5)*180},
+                            new double[] {((node.Envelope.X1)-0.5) * 360, (node.Envelope.Y2-0.5)*180 },
+                            new double[] {((node.Envelope.X2) - 0.5)*360, (node.Envelope.Y2-0.5)*180 },
+                            new double[] {((node.Envelope.X2) - 0.5)*360, (node.Envelope.Y1-0.5)*180 },
+                            new double[] {((node.Envelope.X1) - 0.5)*360, (node.Envelope.Y1 - 0.5) * 180 }
 
 
                         }
