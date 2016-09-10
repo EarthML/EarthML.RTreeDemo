@@ -16,8 +16,8 @@ module.exports = function (grunt) {
                 files: {
                     "signalr/": "signalr/**/*.js",
                     "nprogress/": ["nprogress/nprogress.js", "nprogress/nprogress.css"],
-                   
-
+                    "jquery/": "jquery/dist",
+                    "openlayers": "openlayers/dist"
                 }
             }
         }

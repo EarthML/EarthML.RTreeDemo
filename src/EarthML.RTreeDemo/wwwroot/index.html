@@ -2,16 +2,14 @@
 <html>
 <head>
     <title>Draw Features</title>
-    <link rel="stylesheet" href="http://openlayers.org/en/v3.18.2/css/ol.css" type="text/css">
+    <link rel="stylesheet" href="libs/openlayers/ol.css" type="text/css">
 
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="libs/jquery/jquery.min.js" ></script>
 
     <script src="libs/nprogress/nprogress.js"></script>
     <script src="libs/signalr/jquery.signalR.min.js"></script>
     <script src="signalr/hubs"></script>
-    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-    <script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
-    <script src="http://openlayers.org/en/v3.18.2/build/ol.js"></script>
+    <script src="libs/openlayers/ol.js"></script>
 </head>
 <body>
     <div id="map" class="map"></div>
@@ -32,7 +30,7 @@
 
       var source = new ol.source.Vector();
       var bounds = new ol.source.Vector();
-
+      var boundsImage = new ol.source.ImageVector({ source: bounds });
       var vector = new ol.layer.Vector({
         source: source,
         style: new ol.style.Style({
@@ -52,7 +50,7 @@
         })
       });
       var vectorBounds = new ol.layer.Vector({
-          source: bounds       
+          source: bounds
       });
 
       var map = new ol.Map({
@@ -131,7 +129,7 @@
                   new ol.style.Style({
 
                       stroke: new ol.style.Stroke({
-                          color: [0,0,0, data.height /5],
+                          color: [0,0,0, (data.height+1) /10],
                           width: 1
                       })
                   })]);
@@ -142,15 +140,28 @@
           chat.client.ClearTree = function () {
 
               bounds.clear();
+
+            
           }
           $.connection.hub.logging = true;
           $.connection.hub.start().done(function () {
              
               source.on("addfeature", function (f) {
                   var data = format.writeFeatureObject(f.feature, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" });
-                  chat.server.addFeature(data);
+                  chat.server.search(data).done(function(data){
+                      bounds.clear();
+                     
+                      console.log(data);
+                      bounds.addFeatures(format.readFeatures(data, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
+
+                     
+
+                  });
                   console.log(JSON.stringify(data));
               })
+              setTimeout(function () {
+                  chat.server.sendGrid();
+              }, 10000);
           });
       });
     </script>

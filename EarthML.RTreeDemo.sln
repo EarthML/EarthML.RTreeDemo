@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A75928D-D62D-4D00-B798-8A8F1657B5AD}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "EarthML.RTreeDemo", "src\EarthML.RTreeDemo\EarthML.RTreeDemo.xproj", "{6C0339DE-9CD0-4414-B071-1C94981799BF}"
