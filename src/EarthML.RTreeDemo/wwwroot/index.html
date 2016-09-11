@@ -166,6 +166,8 @@
                       var info = data.features.map(m=>m.properties.name + ", epsg:" + m.properties.epsg).join("<br/>");
                       toastr.info('<div>Found ' + features.length + ' in ' + (new Date().getTime() - time) + 'ms<br/>'+ info +'<div>')
 
+                  }).fail(function (err) {
+                      toastr.error(err);
                   });
                   console.log(JSON.stringify(data));
               })

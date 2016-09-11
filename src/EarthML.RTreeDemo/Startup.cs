@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
+
 
 namespace EarthML.RTreeDemo
 {
@@ -50,7 +50,7 @@ namespace EarthML.RTreeDemo
                 options.Hubs.EnableDetailedErrors = true;
              
             });
-            var settings = new JsonSerializerSettings();
+            var settings = new JsonSerializerSettings() { NullValueHandling= NullValueHandling.Ignore } ;
             settings.ContractResolver = new SignalRContractResolver();
 
             var serializer = JsonSerializer.Create(settings);
