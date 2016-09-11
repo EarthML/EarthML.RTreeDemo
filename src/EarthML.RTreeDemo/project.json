@@ -8,7 +8,8 @@
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
     "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
     "S-Innovations.VectorTiles.GeoJsonVT": "1.0.0-pre-2016052201",
-    "DotSpatial.Topology": "1.9.0"
+    "DotSpatial.Topology": "1.9.0",
+    "EarthML.SpatialIndex.RTree.FileSystem": "1.0.0-pre-2016091104"
   },
 
   "tools": {
@@ -36,7 +37,7 @@
 
   "publishOptions": {
     "include": [
-      "tmp",
+      "data",
       "wwwroot",
       "web.config"
     ]

@@ -3,6 +3,8 @@
 <head>
     <title>Draw Features</title>
     <link rel="stylesheet" href="libs/openlayers/ol.css" type="text/css">
+    <link rel="stylesheet" href="libs/nprogress/nprogress.css" type="text/css" />
+    <link href="libs/toastr/toastr.min.css" rel="stylesheet" />
 
     <script src="libs/jquery/jquery.min.js" ></script>
 
@@ -10,6 +12,8 @@
     <script src="libs/signalr/jquery.signalR.min.js"></script>
     <script src="signalr/hubs"></script>
     <script src="libs/openlayers/ol.js"></script>
+    <script src="libs/nprogress/nprogress.js"></script>
+    <script src="libs/toastr/toastr.min.js"></script>
 </head>
 <body>
     <div id="map" class="map"></div>
@@ -145,25 +149,32 @@
           }
           $.connection.hub.logging = true;
           $.connection.hub.start().done(function () {
-             
+              NProgress.done();
               source.on("addfeature", function (f) {
+                  NProgress.start();
+                  var time = new Date().getTime();
                   var data = format.writeFeatureObject(f.feature, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" });
                   chat.server.search(data).done(function(data){
                       bounds.clear();
                      
                       console.log(data);
-                      bounds.addFeatures(format.readFeatures(data, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" }));
+                      var features = format.readFeatures(data, { featureProjection: "EPSG:3857", dataProjection: "EPSG:4326" });
 
-                     
+                      bounds.addFeatures(features);
+
+                      NProgress.done();
+                      var info = data.features.map(m=>m.properties.name + ", epsg:" + m.properties.epsg).join("<br/>");
+                      toastr.info('<div>Found ' + features.length + ' in ' + (new Date().getTime() - time) + 'ms<br/>'+ info +'<div>')
 
                   });
                   console.log(JSON.stringify(data));
               })
-              setTimeout(function () {
-                  chat.server.sendGrid();
-              }, 10000);
+              
           });
       });
+    </script>
+    <script>
+        NProgress.start();
     </script>
 </body>
 </html>

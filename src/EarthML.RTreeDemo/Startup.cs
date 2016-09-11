@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using SInnovations.VectorTiles.GeoJsonVT.GeoJson;
 
 namespace EarthML.RTreeDemo
 {
@@ -67,7 +68,7 @@ namespace EarthML.RTreeDemo
             {
                 app.UseDeveloperExceptionPage();
             }
-
+             
             app.UseWebSockets();
 
             app.UseSignalR();

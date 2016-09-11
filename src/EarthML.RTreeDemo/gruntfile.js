@@ -17,7 +17,8 @@ module.exports = function (grunt) {
                     "signalr/": "signalr/**/*.js",
                     "nprogress/": ["nprogress/nprogress.js", "nprogress/nprogress.css"],
                     "jquery/": "jquery/dist",
-                    "openlayers": "openlayers/dist"
+                    "openlayers": "openlayers/dist",
+                    "toastr": "toastr/build"
                 }
             }
         }
